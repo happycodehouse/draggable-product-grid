@@ -1,0 +1,47 @@
+@charset "UTF-8";
+
+@use "reset";
+@use "fonts";
+
+.container {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+}
+
+.grid {
+    position: absolute;
+    display: flex;
+    gap: 5vw;
+    cursor: grab;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 5vw;
+
+    &:nth-child(even) {
+        margin-top: 10vw;
+    }
+}
+
+.product {
+    position: relative;
+    width: 18.5vw;
+    aspect-ratio: 4 / 5;
+
+    div {
+        width: 18.5vw;
+        aspect-ratio: 4 / 5;
+    }
+
+    img {
+        position: absolute;
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+}
