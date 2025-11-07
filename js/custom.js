@@ -172,8 +172,9 @@ class Grid {
 
         // product data-id 에서 category 추출 (예: 'handCream-1' → 'handCream')
         const productId = product.dataset.id;
-        const category = productId.match(/^([a-zA-Z]+)/)[1];
-        const scent = productId.match(/(\d+)$/) ? productId.match(/(\d+)$/)[1] : '1'; // 기본값 '1'
+        const match = productId.match(/^([a-zA-Z]+)(?:-(\d+))?$/);
+        const category = match[1];
+        const scent = match[2] || category; // 숫자가 없으면 category 자체를 scent로 사용
 
         const elements = [
             this.details.querySelector(`[data-desc="${productId}"]`),

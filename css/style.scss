@@ -110,6 +110,15 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        margin-top: .5vw;
+    }
+
+    strong {
+        font-weight: 500;
+    }
+
+    span {
+        display: block;
     }
 
     [data-category],
@@ -139,18 +148,18 @@
     }
 
     [data-desc] {
-        margin: 1vw 0;
+        margin: 1vw 0 0;
         word-break: keep-all;
         font-size: 0.625vw;
     }
 
     [data-price] {
+        margin: 2vw 0;
         font-size: 0.938vw;
     }
 
     button {
         padding: 2px 4px;
-        margin: 2.5vw 0;
         outline: 0;
         border: 0.5px solid #000;
         background: unset;
