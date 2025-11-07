@@ -87,17 +87,8 @@
     width: 33vw;
     height: 100vh;
     padding: 3vw 4vw;
-    background: #fafafa;
+    border-left: 0.5px solid #000;
     transform: translate3d(66vw, 0, 0);
-
-    [data-category],
-    [data-scent],
-    [data-ml],
-    [data-note],
-    [data-desc],
-    [data-price] {
-        display: none;
-    }
 
     &_thumb {
         position: relative;
@@ -115,13 +106,60 @@
         }
     }
 
-    &_header {
+    .flex_box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
-    &_body {
-        .desc {
-            //padding-right: 4.25vw;
-            word-break: keep-all;
+    [data-category],
+    [data-scent],
+    [data-ml],
+    [data-note],
+    [data-desc],
+    [data-price] {
+        display: none;
+    }
+
+    [data-category] {
+        font-size: 0.938vw;
+    }
+
+    [data-scent] {
+        font-size: 0.729vw;
+    }
+
+    [data-ml] {
+        margin: .75vw 0;
+        font-size: 0.625vw;
+    }
+
+    [data-note] {
+        font-size: 0.625vw;
+    }
+
+    [data-desc] {
+        margin: 1vw 0;
+        word-break: keep-all;
+        font-size: 0.625vw;
+    }
+
+    [data-price] {
+        font-size: 0.938vw;
+    }
+
+    button {
+        padding: 2px 4px;
+        margin: 2.5vw 0;
+        outline: 0;
+        border: 0.5px solid #000;
+        background: unset;
+        font-size: 0.938vw;
+        cursor: pointer;
+        
+        &:hover {
+            background: #000;
+            color: #ffffff;
         }
     }
 }

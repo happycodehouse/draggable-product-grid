@@ -157,7 +157,7 @@ class Grid {
         this.dom.classList.add('--is-details-showing');
 
         gsap.to(this.dom, {
-            x: '-50vw',
+            x: '-33vw',
             duration: 1.2,
             ease: 'power3.inOut'
         });

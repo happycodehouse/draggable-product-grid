@@ -25,6 +25,8 @@ body {
 body {
     color: var(--color-text);
     background-color: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 @media (scripting: enabled) {
