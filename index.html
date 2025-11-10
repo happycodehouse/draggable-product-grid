@@ -12,12 +12,17 @@
 </head>
 <body class="loading">
 <div id="wrap" class="wrap">
+    <header>
+        <h1>Draggable Product Grid</h1>
+        <button id="zoom" type="button" data-state="in">Zoom Out</button>
+        <a href="https://github.com/happycodehouse/draggable-product-grid" rel="noopener noreferrer" target="_blank">GitHub</a>
+        <p>Images sourced from <a href="https://sujipmihak.com/index.html">sujipmihak.com</a></p>
+    </header>
     <div id="productContainer" class="container">
         <div id="grid" class="grid">
             <div class="column">
                 <div class="product">
-                    <div data-category="
-" data-id="handCream-1"><img src="./images/handCream/img-1-1.png" alt=""></div>
+                    <div data-id="handCream-1"><img src="./images/handCream/img-1-1.png" alt=""></div>
                 </div>
                 <div class="product">
                     <div data-id="lotion-2"><img src="./images/lotion/img-2-1.png" alt=""></div>
@@ -239,15 +244,23 @@
                 <p data-desc="wash-2">자연 그대로의 장미를 응축한 패퍼리한 노트가 인센스·랍다넘·파촐리·머스크와 어우러져 대담하고 매혹적인 향의 레이어를 펼칩니다. 고전적 우아함의 상징인 장미를 다크하게 재해석해, 한 번도 경험하지 못한 새로운 로즈가 연기처럼 신비롭게 스며듭니다. 센티드 핸드&바디 워시는 향을 은은하게 남기며 풍성한 거품으로 노폐물을 제거하고, 보습 성분으로 보호막을 형성해 피부를 건강하게 가꿉니다.</p>
                 <p data-desc="wash-3">네롤리의 신선한 광채가 베티버의 그을린 듯한 우아함과 어우러지고, 은은한 넛맥의 따뜻하고 스파이시한 노트가 감각적인 깊이를 더합니다. 각기 강렬한 개성을 지닌 노트들이 한 편의 정물화처럼 조화롭게 표현됩니다. 센티드 핸드&바디 워시는 향을 은은하게 남기며 풍성한 거품으로 노폐물을 제거하고, 보습 성분으로 보호막을 형성해 피부를 건강하게 가꿉니다.</p>
             </div>
-            <div class="price">
-                <span data-price="handCream">KRW 31,000</span>
-                <span data-price="handSet">KRW 45,000</span>
-                <span data-price="lotion">KRW 51,000</span>
-                <span data-price="oil">KRW 34,000</span>
-                <span data-price="wash">KRW 45,000</span>
+            <div class="flex_box">
+                <div class="price">
+                    <span data-price="handCream">KRW 31,000</span>
+                    <span data-price="handSet">KRW 45,000</span>
+                    <span data-price="lotion">KRW 51,000</span>
+                    <span data-price="oil">KRW 34,000</span>
+                    <span data-price="wash">KRW 45,000</span>
+                </div>
+                <button type="button">ADD TO COLLECTION</button>
             </div>
-            <button type="button">ADD TO COLLECTION</button>
         </div>
+    </div>
+    <div class="cross">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18" stroke="#313131" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M6 6L18 18" stroke="#313131" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
     </div>
 </div>
 <script src="./js/libs/gsap.min.js"></script>

@@ -1,17 +1,18 @@
-import { preloadImages } from './utils.js'
+import {preloadImages} from './utils.js'
 
 gsap.registerPlugin(Draggable, Flip, SplitText);
 
 class Grid {
     constructor() {
-        this.dom = document.querySelector("#productContainer");
-        this.grid = document.querySelector("#grid");
-        this.products = [...document.querySelectorAll(".product div")];
+        this.dom = document.querySelector('#productContainer');
+        this.grid = document.querySelector('#grid');
+        this.products = [...document.querySelectorAll('.product div')];
 
-        this.details = document.querySelector("#productDetails");
-        this.detailsThumb = this.details.querySelector(".details_thumb");
+        this.details = document.querySelector('#productDetails');
+        this.detailsThumb = this.details.querySelector('.details_thumb');
+        this.detailsBtn = this.details.querySelector("button");
 
-        this.cross = document.querySelector(".cross");
+        this.cross = document.querySelector('.cross');
 
         this.isDragging = false;
     };
@@ -83,7 +84,7 @@ class Grid {
                 ease: 'power3.out'
             });
 
-        }, { passive: false });
+        }, {passive: false});
 
         window.addEventListener('resize', () => {
             this.updateBounds();
@@ -104,12 +105,13 @@ class Grid {
                 minY: -(this.grid.offsetHeight - window.innerHeight) - 50,
                 maxY: 50
             };
-        };
+        }
+        ;
     };
 
     observeProducts() {
         const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry)=> {
+            entries.forEach((entry) => {
                 if (entry.target === this.currentProduct) return;
 
                 if (entry.isIntersecting) {
@@ -127,6 +129,7 @@ class Grid {
                         ease: 'poser2.in'
                     });
                 }
+                ;
             });
         }, {
             root: null,
@@ -147,7 +150,11 @@ class Grid {
                 this.showDetails(product);
             });
         });
-    }
+
+        this.dom.addEventListener('click', (e) => {
+            if (this.SHOW_DETAILS) this.hideDetails();
+        });
+    };
 
     showDetails(product) {
         if (this.SHOW_DETAILS) return;
@@ -176,16 +183,23 @@ class Grid {
         const category = match[1];
         const scent = match[2] || category; // 숫자가 없으면 category 자체를 scent로 사용
 
-        const elements = [
-            this.details.querySelector(`[data-desc="${productId}"]`),
-            this.details.querySelector(`[data-category="${category}"]`),
-            this.details.querySelector(`[data-price="${category}"]`),
-            this.details.querySelector(`[data-ml="${category}"]`),
-            this.details.querySelector(`[data-scent="${scent}"]`),
-            this.details.querySelector(`[data-note="${scent}"]`)
+        this.currentElements = [  // this.currentElements에 저장
+            this.details.querySelector(`[data-desc='${productId}']`),
+            this.details.querySelector(`[data-category='${category}']`),
+            this.details.querySelector(`[data-price='${category}']`),
+            this.details.querySelector(`[data-ml='${category}']`),
+            this.details.querySelector(`[data-scent='${scent}']`),
+            this.details.querySelector(`[data-note='${scent}']`)
         ];
 
-        elements.forEach(el => el && (el.style.display = 'block'));
+        gsap.to(this.currentElements, {
+            display: 'block',
+            opacity: 1
+        });
+
+        gsap.to(this.detailsBtn, {
+            opacity: 1
+        })
     }
 
     flipProduct(product) {
@@ -195,8 +209,10 @@ class Grid {
         if (this.observer) {
             this.observer.unobserve(product);
         }
+        ;
 
         const state = Flip.getState(product);
+
         this.detailsThumb.appendChild(product);
 
         Flip.from(state, {
@@ -204,14 +220,140 @@ class Grid {
             duration: 1.2,
             ease: 'power3.inOut'
         });
+
+        gsap.to(this.cross, {
+            scale: 1,
+            duration: .4,
+            delay: .5,
+            ease: 'power2.out'
+        });
+    };
+
+    hideDetails() {
+        this.SHOW_DETAILS = false;
+
+        this.dom.classList.remove('--is-details-showing');
+
+        gsap.to(this.dom, {
+            x: 0,
+            duration: 1.2,
+            delay: .3,
+            ease: "power3.inOut",
+            onComplete: () => {
+                this.details.classList.remove('--is-showing');
+                gsap.to(this.currentElements, {
+                    display: 'none'
+                });
+            }
+        });
+
+        gsap.to(this.details, {
+            x: '33vw',
+            duration: 1.2,
+            delay: .3,
+            ease: "power3.inOut"
+        });
+
+        gsap.to(this.currentElements, {
+            opacity: 0,
+            duration: .3
+        });
+
+        gsap.to(this.detailsBtn, {
+            opacity: 0,
+            duration: .3
+        })
+
+        this.unFlipProduct();
     }
+
+    unFlipProduct() {
+        if (!this.currentProduct || !this.originalParent) return
+
+        gsap.to(this.cross, {
+            scale: 0,
+            duration: 0.4,
+            ease: 'power2.out'
+        })
+
+        const finalRect = this.originalParent.getBoundingClientRect()
+        const currentRect = this.currentProduct.getBoundingClientRect()
+
+        gsap.set(this.currentProduct, {
+            position: 'absolute',
+            top: currentRect.top - this.detailsThumb.getBoundingClientRect().top + 'px',
+            left: currentRect.left - this.detailsThumb.getBoundingClientRect().left + 'px',
+            width: currentRect.width + 'px',
+            height: currentRect.height + 'px',
+            zIndex: 10000,
+        })
+
+        gsap.to(this.currentProduct, {
+            top: finalRect.top - this.detailsThumb.getBoundingClientRect().top + 'px',
+            left: finalRect.left - this.detailsThumb.getBoundingClientRect().left + 'px',
+            width: finalRect.width + 'px',
+            height: finalRect.height + 'px',
+            duration: 1.2,
+            delay: .3,
+            ease: 'power3.inOut',
+            onComplete: () => {
+                this.originalParent.appendChild(this.currentProduct);
+
+                gsap.set(this.currentProduct, {
+                    position: '',
+                    top: '',
+                    left: '',
+                    width: '',
+                    height: '',
+                    zIndex: ''
+                })
+
+                this.currentProduct = null;
+                this.originalParent = null;
+            },
+        });
+    }
+
+    handleCursor(e) {
+        const x = e.clientX;
+        const y = e.clientY;
+
+        gsap.to(this.cross, {
+            x: x - this.cross.offsetWidth / 2,
+            y: y - this.cross.offsetHeight / 2,
+            duration: .4,
+            ease: 'power2.out'
+        });
+    }
+
+    zoom() {
+        this.zoomBtn = document.querySelector('#zoom');
+        this.zoomScale = 1;
+
+        this.zoomBtn.addEventListener('click', (e) => {
+            const isZoomedIn = this.zoomBtn.dataset.state === 'in';
+
+            this.zoomBtn.dataset.state = isZoomedIn ? 'out' : 'in';
+            this.zoomScale = isZoomedIn ? 0.5 : 1;
+
+            this.zoomBtn.textContent = isZoomedIn ? 'Zoom In' : 'Zoom Out';
+
+            gsap.to(this.grid, {
+                scale: this.zoomScale,
+                duration: 0.8,
+                ease: 'power3.inOut',
+            });
+
+            this.updateBounds();
+        });
+    };
 
     intro() {
         this.centerGrid();
 
         const timeline = gsap.timeline();
 
-        timeline.set(this.dom, { scale: .5 });
+        timeline.set(this.dom, {scale: .5});
         timeline.set(this.products, {
             scale: 0.5,
             opacity: 0
@@ -221,34 +363,36 @@ class Grid {
             scale: 1,
             opacity: 1,
             duration: 0.6,
-            ease: "power3.out",
+            ease: 'power3.out',
             stagger: {
                 amount: 1.2,
-                from: "random"
+                from: 'random'
             }
         });
+
         timeline.to(this.dom, {
             scale: 1,
             duration: 1.2,
-            ease: "power3.inOut",
+            ease: 'power3.inOut',
             onComplete: () => {
                 this.setupDraggable();
                 this.addEvents();
                 this.observeProducts();
                 this.handleDetails();
+                this.zoom();
             }
         });
-    }
+    };
 
     init() {
         this.intro();
-    }
-}
+    };
+};
 
 const grid = new Grid();
 
 preloadImages('#grid img').then(() => {
     grid.init();
     document.body.classList.remove('loading');
-})
+});
 

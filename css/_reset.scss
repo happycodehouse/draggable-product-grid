@@ -29,6 +29,18 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+button {
+    background: unset;
+    outline: 0;
+    border: 0.5px solid #000;
+    cursor: pointer;
+}
+
+a {
+    text-decoration: unset;
+    color: inherit;
+}
+
 @media (scripting: enabled) {
     .loading {
         &::before,
