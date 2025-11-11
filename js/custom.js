@@ -1,6 +1,6 @@
 import {preloadImages} from './utils.js'
 
-gsap.registerPlugin(Draggable, Flip, SplitText);
+gsap.registerPlugin(Draggable, Flip);
 
 class Grid {
     constructor() {
