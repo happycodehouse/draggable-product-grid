@@ -202,33 +202,6 @@ class Grid {
         })
     }
 
-    flipProduct(product) {
-        this.currentProduct = product;
-        this.originalParent = product.parentNode;
-
-        if (this.observer) {
-            this.observer.unobserve(product);
-        }
-        ;
-
-        const state = Flip.getState(product);
-
-        this.detailsThumb.appendChild(product);
-
-        Flip.from(state, {
-            absolute: true,
-            duration: 1.2,
-            ease: 'power3.inOut'
-        });
-
-        gsap.to(this.cross, {
-            scale: 1,
-            duration: .4,
-            delay: .5,
-            ease: 'power2.out'
-        });
-    };
-
     hideDetails() {
         this.SHOW_DETAILS = false;
 
@@ -267,17 +240,44 @@ class Grid {
         this.unFlipProduct();
     }
 
+    flipProduct(product) {
+        this.currentProduct = product;
+        this.originalParent = product.parentNode;
+
+        if (this.observer) {
+            this.observer.unobserve(product);
+        }
+        ;
+
+        const state = Flip.getState(product);
+
+        this.detailsThumb.appendChild(product);
+
+        Flip.from(state, {
+            absolute: true,
+            duration: 1.2,
+            ease: 'power3.inOut'
+        });
+
+        gsap.to(this.cross, {
+            scale: 1,
+            duration: .4,
+            delay: .5,
+            ease: 'power2.out'
+        });
+    };
+
     unFlipProduct() {
-        if (!this.currentProduct || !this.originalParent) return
+        if (!this.currentProduct || !this.originalParent) return;
 
         gsap.to(this.cross, {
             scale: 0,
             duration: 0.4,
             ease: 'power2.out'
-        })
+        });
 
-        const finalRect = this.originalParent.getBoundingClientRect()
-        const currentRect = this.currentProduct.getBoundingClientRect()
+        const finalRect = this.originalParent.getBoundingClientRect();
+        const currentRect = this.currentProduct.getBoundingClientRect();
 
         gsap.set(this.currentProduct, {
             position: 'absolute',
@@ -286,7 +286,7 @@ class Grid {
             width: currentRect.width + 'px',
             height: currentRect.height + 'px',
             zIndex: 10000,
-        })
+        });
 
         gsap.to(this.currentProduct, {
             top: finalRect.top - this.detailsThumb.getBoundingClientRect().top + 'px',
@@ -306,13 +306,13 @@ class Grid {
                     width: '',
                     height: '',
                     zIndex: ''
-                })
+                });
 
                 this.currentProduct = null;
                 this.originalParent = null;
             },
         });
-    }
+    };
 
     handleCursor(e) {
         const x = e.clientX;
@@ -324,7 +324,7 @@ class Grid {
             duration: .4,
             ease: 'power2.out'
         });
-    }
+    };
 
     zoom() {
         this.zoomBtn = document.querySelector('#zoom');
