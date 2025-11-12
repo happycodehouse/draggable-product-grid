@@ -12,7 +12,7 @@ class Grid {
         this.detailsThumb = this.details.querySelector('.details_thumb');
         this.detailsBtn = this.details.querySelector("button");
 
-        this.cross = document.querySelector('.cross');
+        this.cross = document.querySelector('#cross');
 
         this.isDragging = false;
     };
