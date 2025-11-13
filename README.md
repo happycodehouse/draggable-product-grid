@@ -1,4 +1,4 @@
-﻿`# 🖱️ Draggable Product Grid
+﻿# 🖱️ Draggable Product Grid
 > Interactive product grid component with draggable products, zoom controls, and product detail modal.
 
 <p align="left">
@@ -26,3 +26,4 @@
 
 
 `
+
