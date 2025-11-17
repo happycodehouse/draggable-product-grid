@@ -30,7 +30,8 @@ class Grid {
 
         timeline.set(this.products, {
             scale: 0.5,
-            opacity: 0
+            opacity: 0,
+            transition: 'unset',
         });
 
         timeline.to(this.products, {
@@ -259,7 +260,6 @@ class Grid {
             this.details.querySelector(`[data-price='${category}']`)
         ].filter(el => el !== null);
 
-        // 헤더 요소들 각각 애니메이션
         this.currentHeaderElements.forEach(element => {
             gsap.to(element.querySelectorAll('.char'), {
                 y: 0,
@@ -270,7 +270,6 @@ class Grid {
             });
         });
 
-        // 바디 요소들 각각 애니메이션
         this.currentBodyElements.forEach(element => {
             gsap.to(element.querySelectorAll('.line'), {
                 y: 0,
@@ -281,7 +280,6 @@ class Grid {
             });
         });
 
-        // 버튼 애니메이션
         gsap.to(this.detailsBtn, {
             opacity: 1,
             duration: 1.2,
@@ -409,7 +407,16 @@ class Grid {
             height: finalRect.height + 'px',
             duration: 1.2,
             delay: .3,
-            ease: 'power3.inOut',
+            ease: 'power2.inOut',
+            onStart: () => {
+                gsap.set(this.products, {
+                    transition: 'unset'
+                });
+
+                gsap.set(this.currentProduct, {
+                    transition: 'transform 300ms ease-in-out'
+                });
+            },
             onComplete: () => {
                 this.originalParent.appendChild(this.currentProduct);
 
@@ -420,10 +427,13 @@ class Grid {
                     width: '',
                     height: '',
                     zIndex: '',
+                    transition: ''
                 });
 
                 this.currentProduct = null;
                 this.originalParent = null;
+
+
             },
         });
     }
