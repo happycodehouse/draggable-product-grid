@@ -1,6 +1,6 @@
 import {preloadImages} from './utils.js'
 
-gsap.registerPlugin(Draggable, Flip);
+gsap.registerPlugin(Draggable, Flip, SplitText);
 
 class Grid {
     constructor() {
@@ -10,11 +10,52 @@ class Grid {
 
         this.details = document.querySelector('#productDetails');
         this.detailsThumb = this.details.querySelector('.details_thumb');
-        this.detailsBtn = this.details.querySelector("button");
+        this.detailsBtn = this.details.querySelector('button');
 
         this.cross = document.querySelector('#cross');
 
         this.isDragging = false;
+    };
+
+    init() {
+        this.intro();
+    };
+
+    intro() {
+        this.centerGrid();
+
+        const timeline = gsap.timeline();
+
+        timeline.set(this.dom, {scale: .5});
+
+        timeline.set(this.products, {
+            scale: 0.5,
+            opacity: 0
+        });
+
+        timeline.to(this.products, {
+            scale: 1,
+            opacity: 1,
+            duration: 0.6,
+            ease: 'power3.out',
+            stagger: {
+                amount: 1.2,
+                from: 'random'
+            }
+        });
+
+        timeline.to(this.dom, {
+            scale: 1,
+            duration: 1.2,
+            ease: 'power3.inOut',
+            onComplete: () => {
+                this.setupDraggable();
+                this.addEvents();
+                this.observeProducts();
+                this.handleDetails();
+                this.zoom();
+            }
+        });
     };
 
     centerGrid() {
@@ -82,8 +123,7 @@ class Grid {
                 y: clampedY,
                 duration: 0.3,
                 ease: 'power3.out'
-            });
-
+            })
         }, {passive: false});
 
         window.addEventListener('resize', () => {
@@ -95,7 +135,7 @@ class Grid {
                 this.handleCursor(e);
             }
         });
-    };
+    }
 
     updateBounds() {
         if (this.draggable) {
@@ -104,10 +144,9 @@ class Grid {
                 maxX: 50,
                 minY: -(this.grid.offsetHeight - window.innerHeight) - 50,
                 maxY: 50
-            };
+            }
         }
-        ;
-    };
+    }
 
     observeProducts() {
         const observer = new IntersectionObserver((entries) => {
@@ -129,7 +168,6 @@ class Grid {
                         ease: 'poser2.in'
                     });
                 }
-                ;
             });
         }, {
             root: null,
@@ -137,12 +175,37 @@ class Grid {
         });
 
         this.products.forEach(product => {
-            observer.observe(product)
+            observer.observe(product);
         });
     };
 
     handleDetails() {
         this.SHOW_DETAILS = false;
+
+        this.headerTexts = this.details.querySelectorAll(".details_header .data-wrap *");
+        this.bodyTexts = this.details.querySelectorAll(".details_body .data-wrap *");
+
+        gsap.set(this.detailsBtn, {
+            opacity: 0
+        });
+
+        const splitHeaderTexts = new SplitText(this.headerTexts, {
+            type: 'lines, chars',
+            mask: 'lines',
+            charsClass: 'char'
+        });
+
+        const splitBodyTexts = new SplitText(this.bodyTexts, {
+            type: 'lines',
+            mask: 'lines',
+            linesClass: 'line'
+        });
+
+        const splitButton = new SplitText(this.detailsBtn, {
+            type: 'lines',
+            mask: 'lines',
+            linesClass: 'line'
+        });
 
         this.products.forEach(product => {
             product.addEventListener('click', (e) => {
@@ -154,7 +217,7 @@ class Grid {
         this.dom.addEventListener('click', (e) => {
             if (this.SHOW_DETAILS) this.hideDetails();
         });
-    };
+    }
 
     showDetails(product) {
         if (this.SHOW_DETAILS) return;
@@ -166,40 +229,76 @@ class Grid {
         gsap.to(this.dom, {
             x: '-33vw',
             duration: 1.2,
-            ease: 'power3.inOut'
+            ease: 'power3.inOut',
         });
 
         gsap.to(this.details, {
             x: 0,
             duration: 1.2,
-            ease: 'power3.inOut'
+            ease: 'power3.inOut',
         });
 
         this.flipProduct(product);
 
-        // product data-id 에서 category 추출 (예: 'handCream-1' → 'handCream')
+        // product data-id 에서 category 추출
         const productId = product.dataset.id;
         const match = productId.match(/^([a-zA-Z]+)(?:-(\d+))?$/);
         const category = match[1];
-        const scent = match[2] || category; // 숫자가 없으면 category 자체를 scent로 사용
+        const scent = match[2] || category;
 
-        this.currentElements = [  // this.currentElements에 저장
-            this.details.querySelector(`[data-desc='${productId}']`),
+        // 현재 제품에 해당하는 요소들 저장
+        this.currentHeaderElements = [
             this.details.querySelector(`[data-category='${category}']`),
-            this.details.querySelector(`[data-price='${category}']`),
-            this.details.querySelector(`[data-ml='${category}']`),
             this.details.querySelector(`[data-scent='${scent}']`),
-            this.details.querySelector(`[data-note='${scent}']`)
-        ];
+            this.details.querySelector(`[data-note='${scent}']`),
+            this.details.querySelector(`[data-ml='${category}']`)
+        ].filter(el => el !== null);
 
-        gsap.to(this.currentElements, {
-            display: 'block',
-            opacity: 1
+        this.currentBodyElements = [
+            this.details.querySelector(`[data-desc='${productId}']`),
+            this.details.querySelector(`[data-price='${category}']`)
+        ].filter(el => el !== null);
+
+        // 헤더 요소들 각각 애니메이션
+        this.currentHeaderElements.forEach(element => {
+            gsap.to(element.querySelectorAll('.char'), {
+                y: 0,
+                duration: 1.2,
+                delay: .4,
+                ease: 'power3.inOut',
+                stagger: 0.025
+            });
         });
 
+        // 바디 요소들 각각 애니메이션
+        this.currentBodyElements.forEach(element => {
+            gsap.to(element.querySelectorAll('.line'), {
+                y: 0,
+                duration: 1.2,
+                delay: .4,
+                ease: 'power3.inOut',
+                stagger: .05
+            });
+        });
+
+        // 버튼 애니메이션
         gsap.to(this.detailsBtn, {
-            opacity: 1
-        })
+            opacity: 1,
+            duration: 1.2,
+            delay: .4,
+            ease: 'power3.inOut'
+        });
+
+        const buttonLines = this.detailsBtn.querySelectorAll('.line');
+        if (buttonLines.length > 0) {
+            gsap.to(buttonLines, {
+                y: 0,
+                duration: 1.2,
+                delay: .4,
+                ease: 'power3.inOut',
+                stagger: .05
+            });
+        }
     }
 
     hideDetails() {
@@ -211,12 +310,9 @@ class Grid {
             x: 0,
             duration: 1.2,
             delay: .3,
-            ease: "power3.inOut",
+            ease: 'power3.inOut',
             onComplete: () => {
                 this.details.classList.remove('--is-showing');
-                gsap.to(this.currentElements, {
-                    display: 'none'
-                });
             }
         });
 
@@ -224,20 +320,37 @@ class Grid {
             x: '33vw',
             duration: 1.2,
             delay: .3,
-            ease: "power3.inOut"
+            ease: 'power3.inOut'
         });
 
-        gsap.to(this.currentElements, {
-            opacity: 0,
-            duration: .3
+        this.unFlipProduct();
+
+        this.currentHeaderElements.forEach(element => {
+            gsap.to(element.querySelectorAll('.char'), {
+                y: '100%',
+                duration: 0.6,
+                ease: 'power3.inOut',
+                stagger: {
+                    amount: 0.025,
+                    from: 'end'
+                }
+            });
+        });
+
+        this.currentBodyElements.forEach(element => {
+            gsap.to(element.querySelectorAll('.line'), {
+                y: '100%',
+                duration: 0.6,
+                ease: 'power3.inOut',
+                stagger: 0.05
+            });
         });
 
         gsap.to(this.detailsBtn, {
             opacity: 0,
-            duration: .3
-        })
-
-        this.unFlipProduct();
+            duration: 0.6,
+            ease: 'power3.inOut'
+        });
     }
 
     flipProduct(product) {
@@ -247,7 +360,6 @@ class Grid {
         if (this.observer) {
             this.observer.unobserve(product);
         }
-        ;
 
         const state = Flip.getState(product);
 
@@ -256,16 +368,16 @@ class Grid {
         Flip.from(state, {
             absolute: true,
             duration: 1.2,
-            ease: 'power3.inOut'
+            ease: 'power3.inOut',
         });
 
         gsap.to(this.cross, {
             scale: 1,
-            duration: .4,
+            duration: 0.4,
             delay: .5,
             ease: 'power2.out'
         });
-    };
+    }
 
     unFlipProduct() {
         if (!this.currentProduct || !this.originalParent) return;
@@ -274,7 +386,9 @@ class Grid {
             scale: 0,
             duration: 0.4,
             ease: 'power2.out'
-        });
+        })
+
+        const state = Flip.getState(this.currentProduct);
 
         const finalRect = this.originalParent.getBoundingClientRect();
         const currentRect = this.currentProduct.getBoundingClientRect();
@@ -285,7 +399,7 @@ class Grid {
             left: currentRect.left - this.detailsThumb.getBoundingClientRect().left + 'px',
             width: currentRect.width + 'px',
             height: currentRect.height + 'px',
-            zIndex: 10000,
+            zIndex: 10000
         });
 
         gsap.to(this.currentProduct, {
@@ -305,14 +419,14 @@ class Grid {
                     left: '',
                     width: '',
                     height: '',
-                    zIndex: ''
+                    zIndex: '',
                 });
 
                 this.currentProduct = null;
                 this.originalParent = null;
             },
         });
-    };
+    }
 
     handleCursor(e) {
         const x = e.clientX;
@@ -321,10 +435,10 @@ class Grid {
         gsap.to(this.cross, {
             x: x - this.cross.offsetWidth / 2,
             y: y - this.cross.offsetHeight / 2,
-            duration: .4,
+            duration: 0.4,
             ease: 'power2.out'
         });
-    };
+    }
 
     zoom() {
         this.zoomBtn = document.querySelector('#zoom');
@@ -347,47 +461,7 @@ class Grid {
             this.updateBounds();
         });
     };
-
-    intro() {
-        this.centerGrid();
-
-        const timeline = gsap.timeline();
-
-        timeline.set(this.dom, {scale: .5});
-        timeline.set(this.products, {
-            scale: 0.5,
-            opacity: 0
-        });
-
-        timeline.to(this.products, {
-            scale: 1,
-            opacity: 1,
-            duration: 0.6,
-            ease: 'power3.out',
-            stagger: {
-                amount: 1.2,
-                from: 'random'
-            }
-        });
-
-        timeline.to(this.dom, {
-            scale: 1,
-            duration: 1.2,
-            ease: 'power3.inOut',
-            onComplete: () => {
-                this.setupDraggable();
-                this.addEvents();
-                this.observeProducts();
-                this.handleDetails();
-                this.zoom();
-            }
-        });
-    };
-
-    init() {
-        this.intro();
-    };
-};
+}
 
 const grid = new Grid();
 
