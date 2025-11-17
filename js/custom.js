@@ -263,7 +263,7 @@ class Grid {
         this.currentHeaderElements.forEach(element => {
             gsap.to(element.querySelectorAll('.char'), {
                 y: 0,
-                duration: 1.2,
+                duration: 1.1,
                 delay: .4,
                 ease: 'power3.inOut',
                 stagger: 0.025
@@ -273,7 +273,7 @@ class Grid {
         this.currentBodyElements.forEach(element => {
             gsap.to(element.querySelectorAll('.line'), {
                 y: 0,
-                duration: 1.2,
+                duration: 1.1,
                 delay: .4,
                 ease: 'power3.inOut',
                 stagger: .05
@@ -288,6 +288,7 @@ class Grid {
         });
 
         const buttonLines = this.detailsBtn.querySelectorAll('.line');
+
         if (buttonLines.length > 0) {
             gsap.to(buttonLines, {
                 y: 0,
@@ -407,7 +408,7 @@ class Grid {
             height: finalRect.height + 'px',
             duration: 1.2,
             delay: .3,
-            ease: 'power2.inOut',
+            ease: 'power3.inOut',
             onStart: () => {
                 gsap.set(this.products, {
                     transition: 'unset'
