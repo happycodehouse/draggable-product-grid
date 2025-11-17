@@ -434,8 +434,6 @@ class Grid {
 
                 this.currentProduct = null;
                 this.originalParent = null;
-
-
             },
         });
     }
