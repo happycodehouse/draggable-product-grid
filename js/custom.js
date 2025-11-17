@@ -301,6 +301,8 @@ class Grid {
     }
 
     hideDetails() {
+        if (!this.SHOW_DETAILS) return;
+
         this.SHOW_DETAILS = false;
 
         this.dom.classList.remove('--is-details-showing');
@@ -324,25 +326,24 @@ class Grid {
 
         this.unFlipProduct();
 
-        this.currentHeaderElements.forEach(element => {
-            gsap.to(element.querySelectorAll('.char'), {
-                y: '100%',
-                duration: 0.6,
-                ease: 'power3.inOut',
-                stagger: {
-                    amount: 0.025,
-                    from: 'end'
-                }
-            });
+        const allChars = this.details.querySelectorAll('.char');
+
+        gsap.to(allChars, {
+            y: '100%',
+            duration: 0.6,
+            ease: 'power3.inOut',
+            stagger: {
+                amount: 0.025,
+                from: 'end'
+            }
         });
 
-        this.currentBodyElements.forEach(element => {
-            gsap.to(element.querySelectorAll('.line'), {
-                y: '100%',
-                duration: 0.6,
-                ease: 'power3.inOut',
-                stagger: 0.05
-            });
+        const allLines = this.details.querySelectorAll('.line');
+
+        gsap.to(allLines, {
+            y: '100%',
+            duration: 0.6,
+            ease: 'power3.inOut',
         });
 
         gsap.to(this.detailsBtn, {
