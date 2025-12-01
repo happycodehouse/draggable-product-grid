@@ -2,39 +2,38 @@ import {preloadImages} from './utils.js'
 
 gsap.registerPlugin(Draggable, Flip, SplitText);
 
-class Grid {
-    constructor() {
-        this.dom = document.querySelector('#productContainer');
-        this.grid = document.querySelector('#grid');
-        this.products = [...document.querySelectorAll('.product div')];
+const Custom = {};
 
-        this.details = document.querySelector('#productDetails');
-        this.detailsThumb = this.details.querySelector('.details_thumb');
-        this.detailsBtn = this.details.querySelector('button');
+const $dom = document.querySelector('#productContainer'),
+    $grid = document.querySelector('#grid'),
+    $products = [...document.querySelectorAll('.product div')],
+    $details = document.querySelector('#productDetails'),
+    $detailsThumb = $details.querySelector('.details_thumb'),
+    $detailsBtn = $details.querySelector('button'),
+    $cross = document.querySelector('#cross');
 
-        this.cross = document.querySelector('#cross');
+let draggable, observer, $currentProduct, $originalParent;
+let isDragging = false;
+let SHOW_DETAILS = false;
 
-        this.isDragging = false;
-    };
-
-    init() {
+Custom.utils = {
+    init: function () {
         this.intro();
-    };
-
-    intro() {
+    },
+    intro: function () {
         this.centerGrid();
 
         const timeline = gsap.timeline();
 
-        timeline.set(this.dom, {scale: .5});
+        timeline.set($dom, {scale: .5});
 
-        timeline.set(this.products, {
+        timeline.set($products, {
             scale: 0.5,
             opacity: 0,
-            transition: 'unset',
+            transition: 'unset'
         });
 
-        timeline.to(this.products, {
+        timeline.to($products, {
             scale: 1,
             opacity: 1,
             duration: 0.6,
@@ -45,7 +44,7 @@ class Grid {
             }
         });
 
-        timeline.to(this.dom, {
+        timeline.to($dom, {
             scale: 1,
             duration: 1.2,
             ease: 'power3.inOut',
@@ -57,32 +56,30 @@ class Grid {
                 this.zoom();
             }
         });
-    };
-
-    centerGrid() {
-        const gridWidth = this.grid.offsetWidth;
-        const gridHeight = this.grid.offsetHeight;
+    },
+    centerGrid: function () {
+        const gridWidth = $grid.offsetWidth;
+        const gridHeight = $grid.offsetHeight;
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
 
         const centerX = (windowWidth - gridWidth) / 2;
         const centerY = (windowHeight - gridHeight) / 2;
 
-        gsap.set(this.grid, {
+        gsap.set($grid, {
             x: centerX,
             y: centerY
         });
-    };
+    },
+    setupDraggable: function () {
+        $dom.classList.add('--is-loaded');
 
-    setupDraggable() {
-        this.dom.classList.add('--is-loaded');
-
-        this.draggable = Draggable.create(this.grid, {
+        draggable = Draggable.create($grid, {
             type: 'x,y',
             bounds: {
-                minX: -(this.grid.offsetWidth - window.innerWidth) - 200,
+                minX: -($grid.offsetWidth - window.innerWidth) - 200,
                 maxX: 200,
-                minY: -(this.grid.offsetHeight - window.innerHeight) - 100,
+                minY: -($grid.offsetHeight - window.innerHeight) - 100,
                 maxY: 100
             },
             inertia: true,
@@ -90,18 +87,17 @@ class Grid {
             edgeResistance: 0.9,
 
             onDragStart: () => {
-                this.isDragging = true;
-                this.grid.classList.add('--is-dragging');
+                isDragging = true;
+                $grid.classList.add('--is-dragging');
             },
 
             onDragEnd: () => {
-                this.isDragging = false;
-                this.grid.classList.remove('--is-dragging');
+                isDragging = false;
+                $grid.classList.remove('--is-dragging');
             }
         })[0];
-    };
-
-    addEvents() {
+    },
+    addEvents: function () {
         window.addEventListener('wheel', (e) => {
             e.preventDefault();
 
@@ -109,17 +105,17 @@ class Grid {
             const deltaX = -e.deltaX * 7;
             const deltaY = -e.deltaY * 7;
 
-            const currentX = gsap.getProperty(this.grid, 'x');
-            const currentY = gsap.getProperty(this.grid, 'y');
+            const currentX = gsap.getProperty($grid, 'x');
+            const currentY = gsap.getProperty($grid, 'y');
 
             const newX = currentX + deltaX;
             const newY = currentY + deltaY;
 
-            const bounds = this.draggable.vars.bounds;
+            const bounds = draggable.vars.bounds;
             const clampedX = Math.max(bounds.minX, Math.min(bounds.maxX, newX));
             const clampedY = Math.max(bounds.minY, Math.min(bounds.maxY, newY));
 
-            gsap.to(this.grid, {
+            gsap.to($grid, {
                 x: clampedX,
                 y: clampedY,
                 duration: 0.3,
@@ -132,27 +128,25 @@ class Grid {
         });
 
         window.addEventListener('mousemove', (e) => {
-            if (this.SHOW_DETAILS) {
+            if (SHOW_DETAILS) {
                 this.handleCursor(e);
             }
         });
-    }
-
-    updateBounds() {
-        if (this.draggable) {
-            this.draggable.vars.bounds = {
-                minX: -(this.grid.offsetWidth - window.innerWidth) - 50,
+    },
+    updateBounds: function () {
+        if (draggable) {
+            draggable.vars.bounds = {
+                minX: -($grid.offsetWidth - window.innerWidth) - 50,
                 maxX: 50,
-                minY: -(this.grid.offsetHeight - window.innerHeight) - 50,
+                minY: -($grid.offsetHeight - window.innerHeight) - 50,
                 maxY: 50
             }
         }
-    }
-
-    observeProducts() {
-        const observer = new IntersectionObserver((entries) => {
+    },
+    observeProducts: function () {
+        observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
-                if (entry.target === this.currentProduct) return;
+                if (entry.target === $currentProduct) return;
 
                 if (entry.isIntersecting) {
                     gsap.to(entry.target, {
@@ -175,65 +169,63 @@ class Grid {
             threshold: 0.1
         });
 
-        this.products.forEach(product => {
+        $products.forEach(product => {
             observer.observe(product);
         });
-    };
+    },
+    handleDetails: function () {
+        SHOW_DETAILS = false;
 
-    handleDetails() {
-        this.SHOW_DETAILS = false;
+        const $headerTexts = $details.querySelectorAll(".details_header .data-wrap *");
+        const $bodyTexts = $details.querySelectorAll(".details_body .data-wrap *");
 
-        this.headerTexts = this.details.querySelectorAll(".details_header .data-wrap *");
-        this.bodyTexts = this.details.querySelectorAll(".details_body .data-wrap *");
-
-        gsap.set(this.detailsBtn, {
+        gsap.set($detailsBtn, {
             opacity: 0
         });
 
-        const splitHeaderTexts = new SplitText(this.headerTexts, {
+        const splitHeaderTexts = new SplitText($headerTexts, {
             type: 'lines, chars',
             mask: 'lines',
             charsClass: 'char'
         });
 
-        const splitBodyTexts = new SplitText(this.bodyTexts, {
+        const splitBodyTexts = new SplitText($bodyTexts, {
             type: 'lines',
             mask: 'lines',
             linesClass: 'line'
         });
 
-        const splitButton = new SplitText(this.detailsBtn, {
+        const splitButton = new SplitText($detailsBtn, {
             type: 'lines',
             mask: 'lines',
             linesClass: 'line'
         });
 
-        this.products.forEach(product => {
+        $products.forEach(product => {
             product.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.showDetails(product);
             });
         });
 
-        this.dom.addEventListener('click', (e) => {
-            if (this.SHOW_DETAILS) this.hideDetails();
+        $dom.addEventListener('click', (e) => {
+            if (SHOW_DETAILS) this.hideDetails();
         });
-    }
+    },
+    showDetails: function (product) {
+        if (SHOW_DETAILS) return;
 
-    showDetails(product) {
-        if (this.SHOW_DETAILS) return;
+        SHOW_DETAILS = true;
+        $details.classList.add('--is-showing');
+        $dom.classList.add('--is-details-showing');
 
-        this.SHOW_DETAILS = true;
-        this.details.classList.add('--is-showing');
-        this.dom.classList.add('--is-details-showing');
-
-        gsap.to(this.dom, {
+        gsap.to($dom, {
             x: '-33vw',
             duration: 1.2,
             ease: 'power3.inOut',
         });
 
-        gsap.to(this.details, {
+        gsap.to($details, {
             x: 0,
             duration: 1.2,
             ease: 'power3.inOut',
@@ -248,19 +240,19 @@ class Grid {
         const scent = match[2] || category;
 
         // 현재 제품에 해당하는 요소들 저장
-        this.currentHeaderElements = [
-            this.details.querySelector(`[data-category='${category}']`),
-            this.details.querySelector(`[data-scent='${scent}']`),
-            this.details.querySelector(`[data-note='${scent}']`),
-            this.details.querySelector(`[data-ml='${category}']`)
+        const $currentHeaderElements = [
+            $details.querySelector(`[data-category='${category}']`),
+            $details.querySelector(`[data-scent='${scent}']`),
+            $details.querySelector(`[data-note='${scent}']`),
+            $details.querySelector(`[data-ml='${category}']`)
         ].filter(el => el !== null);
 
-        this.currentBodyElements = [
-            this.details.querySelector(`[data-desc='${productId}']`),
-            this.details.querySelector(`[data-price='${category}']`)
+        const $currentBodyElements = [
+            $details.querySelector(`[data-desc='${productId}']`),
+            $details.querySelector(`[data-price='${category}']`)
         ].filter(el => el !== null);
 
-        this.currentHeaderElements.forEach(element => {
+        $currentHeaderElements.forEach(element => {
             gsap.to(element.querySelectorAll('.char'), {
                 y: 0,
                 duration: 1.1,
@@ -270,7 +262,7 @@ class Grid {
             });
         });
 
-        this.currentBodyElements.forEach(element => {
+        $currentBodyElements.forEach(element => {
             gsap.to(element.querySelectorAll('.line'), {
                 y: 0,
                 duration: 1.1,
@@ -280,17 +272,17 @@ class Grid {
             });
         });
 
-        gsap.to(this.detailsBtn, {
+        gsap.to($detailsBtn, {
             opacity: 1,
             duration: 1.2,
             delay: .4,
             ease: 'power3.inOut'
         });
 
-        const buttonLines = this.detailsBtn.querySelectorAll('.line');
+        const $buttonLines = $detailsBtn.querySelectorAll('.line');
 
-        if (buttonLines.length > 0) {
-            gsap.to(buttonLines, {
+        if ($buttonLines.length > 0) {
+            gsap.to($buttonLines, {
                 y: 0,
                 duration: 1.2,
                 delay: .4,
@@ -298,26 +290,25 @@ class Grid {
                 stagger: .05
             });
         }
-    }
+    },
+    hideDetails: function () {
+        if (!SHOW_DETAILS) return;
 
-    hideDetails() {
-        if (!this.SHOW_DETAILS) return;
+        SHOW_DETAILS = false;
 
-        this.SHOW_DETAILS = false;
+        $dom.classList.remove('--is-details-showing');
 
-        this.dom.classList.remove('--is-details-showing');
-
-        gsap.to(this.dom, {
+        gsap.to($dom, {
             x: 0,
             duration: 1.2,
             delay: .3,
             ease: 'power3.inOut',
             onComplete: () => {
-                this.details.classList.remove('--is-showing');
+                $details.classList.remove('--is-showing');
             }
         });
 
-        gsap.to(this.details, {
+        gsap.to($details, {
             x: '33vw',
             duration: 1.2,
             delay: .3,
@@ -326,9 +317,9 @@ class Grid {
 
         this.unFlipProduct();
 
-        const allChars = this.details.querySelectorAll('.char');
+        const $allChars = $details.querySelectorAll('.char');
 
-        gsap.to(allChars, {
+        gsap.to($allChars, {
             y: '100%',
             duration: 0.6,
             ease: 'power3.inOut',
@@ -338,32 +329,31 @@ class Grid {
             }
         });
 
-        const allLines = this.details.querySelectorAll('.line');
+        const $allLines = $details.querySelectorAll('.line');
 
-        gsap.to(allLines, {
+        gsap.to($allLines, {
             y: '100%',
             duration: 0.6,
             ease: 'power3.inOut',
         });
 
-        gsap.to(this.detailsBtn, {
+        gsap.to($detailsBtn, {
             opacity: 0,
             duration: 0.6,
             ease: 'power3.inOut'
         });
-    }
+    },
+    flipProduct: function (product) {
+        $currentProduct = product;
+        $originalParent = product.parentNode;
 
-    flipProduct(product) {
-        this.currentProduct = product;
-        this.originalParent = product.parentNode;
-
-        if (this.observer) {
-            this.observer.unobserve(product);
+        if (observer) {
+            observer.unobserve(product);
         }
 
         const state = Flip.getState(product);
 
-        this.detailsThumb.appendChild(product);
+        $detailsThumb.appendChild(product);
 
         Flip.from(state, {
             absolute: true,
@@ -371,58 +361,57 @@ class Grid {
             ease: 'power3.inOut',
         });
 
-        gsap.to(this.cross, {
+        gsap.to($cross, {
             scale: 1,
             duration: 0.4,
             delay: .5,
             ease: 'power2.out'
         });
-    }
+    },
+    unFlipProduct: function () {
+        if (!$currentProduct || !$originalParent) return;
 
-    unFlipProduct() {
-        if (!this.currentProduct || !this.originalParent) return;
-
-        gsap.to(this.cross, {
+        gsap.to($cross, {
             scale: 0,
             duration: 0.4,
             ease: 'power2.out'
-        })
+        });
 
-        const state = Flip.getState(this.currentProduct);
+        const state = Flip.getState($currentProduct);
 
-        const finalRect = this.originalParent.getBoundingClientRect();
-        const currentRect = this.currentProduct.getBoundingClientRect();
+        const finalRect = $originalParent.getBoundingClientRect();
+        const currentRect = $currentProduct.getBoundingClientRect();
 
-        gsap.set(this.currentProduct, {
+        gsap.set($currentProduct, {
             position: 'absolute',
-            top: currentRect.top - this.detailsThumb.getBoundingClientRect().top + 'px',
-            left: currentRect.left - this.detailsThumb.getBoundingClientRect().left + 'px',
+            top: currentRect.top - $detailsThumb.getBoundingClientRect().top + 'px',
+            left: currentRect.left - $detailsThumb.getBoundingClientRect().left + 'px',
             width: currentRect.width + 'px',
             height: currentRect.height + 'px',
             zIndex: 10000
         });
 
-        gsap.to(this.currentProduct, {
-            top: finalRect.top - this.detailsThumb.getBoundingClientRect().top + 'px',
-            left: finalRect.left - this.detailsThumb.getBoundingClientRect().left + 'px',
+        gsap.to($currentProduct, {
+            top: finalRect.top - $detailsThumb.getBoundingClientRect().top + 'px',
+            left: finalRect.left - $detailsThumb.getBoundingClientRect().left + 'px',
             width: finalRect.width + 'px',
             height: finalRect.height + 'px',
             duration: 1.2,
             delay: .3,
             ease: 'power3.inOut',
             onStart: () => {
-                gsap.set(this.products, {
+                gsap.set($products, {
                     transition: 'unset'
                 });
 
-                gsap.set(this.currentProduct, {
+                gsap.set($currentProduct, {
                     transition: 'transform 300ms ease-in-out'
                 });
             },
             onComplete: () => {
-                this.originalParent.appendChild(this.currentProduct);
+                $originalParent.appendChild($currentProduct);
 
-                gsap.set(this.currentProduct, {
+                gsap.set($currentProduct, {
                     position: '',
                     top: '',
                     left: '',
@@ -432,51 +421,47 @@ class Grid {
                     transition: ''
                 });
 
-                this.currentProduct = null;
-                this.originalParent = null;
+                $currentProduct = null;
+                $originalParent = null;
             },
         });
-    }
-
-    handleCursor(e) {
+    },
+    handleCursor: function (e) {
         const x = e.clientX;
         const y = e.clientY;
 
-        gsap.to(this.cross, {
-            x: x - this.cross.offsetWidth / 2,
-            y: y - this.cross.offsetHeight / 2,
+        gsap.to($cross, {
+            x: x - $cross.offsetWidth / 2,
+            y: y - $cross.offsetHeight / 2,
             duration: 0.4,
             ease: 'power2.out'
         });
-    }
+    },
+    zoom: function () {
+        const $zoomBtn = document.querySelector('#zoom');
+        let zoomScale = 1;
 
-    zoom() {
-        this.zoomBtn = document.querySelector('#zoom');
-        this.zoomScale = 1;
+        $zoomBtn.addEventListener('click', (e) => {
+            const isZoomedIn = $zoomBtn.dataset.state === 'in';
 
-        this.zoomBtn.addEventListener('click', (e) => {
-            const isZoomedIn = this.zoomBtn.dataset.state === 'in';
+            $zoomBtn.dataset.state = isZoomedIn ? 'out' : 'in';
+            zoomScale = isZoomedIn ? 0.5 : 1;
 
-            this.zoomBtn.dataset.state = isZoomedIn ? 'out' : 'in';
-            this.zoomScale = isZoomedIn ? 0.5 : 1;
+            $zoomBtn.textContent = isZoomedIn ? 'Zoom In' : 'Zoom Out';
 
-            this.zoomBtn.textContent = isZoomedIn ? 'Zoom In' : 'Zoom Out';
-
-            gsap.to(this.grid, {
-                scale: this.zoomScale,
+            gsap.to($grid, {
+                scale: zoomScale,
                 duration: 0.8,
                 ease: 'power3.inOut',
             });
 
             this.updateBounds();
         });
-    };
+    }
 }
 
-const grid = new Grid();
-
 preloadImages('#grid img').then(() => {
-    grid.init();
+    Custom.utils.init();
     document.body.classList.remove('loading');
 });
 
