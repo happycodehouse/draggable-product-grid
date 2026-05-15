@@ -23,7 +23,7 @@
 - **JavaScript (ES6+)**
 - **SCSS**
 
+## Credits
 
-
-`
+- Inspired by [Recreating Palmer's Draggable Product Grid with GSAP](https://tympanus.net/codrops/2025/09/01/recreating-palmers-draggable-product-grid-with-gsap/) by Joffrey Spitzer on Codrops.
 
