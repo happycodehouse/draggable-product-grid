@@ -14,6 +14,7 @@ const $dom = document.querySelector('#productContainer'),
 
 let draggable, observer, $currentProduct, $originalParent;
 let isDragging = false;
+let isAnimating = false;
 let SHOW_DETAILS = false;
 
 Custom.utils = {
@@ -101,7 +102,6 @@ Custom.utils = {
         window.addEventListener('wheel', (e) => {
             e.preventDefault();
 
-            // 마우스 휠의 기본 이동량 증폭하기 위해서 사용
             const deltaX = -e.deltaX * 7;
             const deltaY = -e.deltaY * 7;
 
@@ -120,7 +120,7 @@ Custom.utils = {
                 y: clampedY,
                 duration: 0.3,
                 ease: 'power3.out'
-            })
+            });
         }, {passive: false});
 
         window.addEventListener('resize', () => {
@@ -140,7 +140,7 @@ Custom.utils = {
                 maxX: 50,
                 minY: -($grid.offsetHeight - window.innerHeight) - 50,
                 maxY: 50
-            }
+            };
         }
     },
     observeProducts: function () {
@@ -160,7 +160,7 @@ Custom.utils = {
                         scale: 0.5,
                         opacity: 0,
                         duration: 0.5,
-                        ease: 'poser2.in'
+                        ease: 'power2.in'
                     });
                 }
             });
@@ -204,18 +204,25 @@ Custom.utils = {
         $products.forEach(product => {
             product.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.showDetails(product);
+                if (!isAnimating) this.showDetails(product);
             });
         });
 
-        $dom.addEventListener('click', (e) => {
-            if (SHOW_DETAILS) this.hideDetails();
+        $dom.addEventListener('click', () => {
+            if (SHOW_DETAILS && !isAnimating) this.hideDetails();
         });
     },
     showDetails: function (product) {
-        if (SHOW_DETAILS) return;
+        if (SHOW_DETAILS || isAnimating) return;
 
         SHOW_DETAILS = true;
+        isAnimating = true;
+
+        // delay(0.4) + duration(1.2) = 1.6
+        gsap.delayedCall(1.6, () => {
+            isAnimating = false;
+        });
+
         $details.classList.add('--is-showing');
         $dom.classList.add('--is-details-showing');
 
@@ -233,13 +240,11 @@ Custom.utils = {
 
         this.flipProduct(product);
 
-        // product data-id 에서 category 추출
         const productId = product.dataset.id;
         const match = productId.match(/^([a-zA-Z]+)(?:-(\d+))?$/);
         const category = match[1];
         const scent = match[2] || category;
 
-        // 현재 제품에 해당하는 요소들 저장
         const $currentHeaderElements = [
             $details.querySelector(`[data-category='${category}']`),
             $details.querySelector(`[data-scent='${scent}']`),
@@ -292,9 +297,15 @@ Custom.utils = {
         }
     },
     hideDetails: function () {
-        if (!SHOW_DETAILS) return;
+        if (!SHOW_DETAILS || isAnimating) return;
 
         SHOW_DETAILS = false;
+        isAnimating = true;
+
+        // delay(0.3) + duration(1.2) = 1.5
+        gsap.delayedCall(1.5, () => {
+            isAnimating = false;
+        });
 
         $dom.classList.remove('--is-details-showing');
 
@@ -377,8 +388,6 @@ Custom.utils = {
             ease: 'power2.out'
         });
 
-        const state = Flip.getState($currentProduct);
-
         const finalRect = $originalParent.getBoundingClientRect();
         const currentRect = $currentProduct.getBoundingClientRect();
 
@@ -421,6 +430,10 @@ Custom.utils = {
                     transition: ''
                 });
 
+                if (observer) {
+                    observer.observe($currentProduct);
+                }
+
                 $currentProduct = null;
                 $originalParent = null;
             },
@@ -441,7 +454,7 @@ Custom.utils = {
         const $zoomBtn = document.querySelector('#zoom');
         let zoomScale = 1;
 
-        $zoomBtn.addEventListener('click', (e) => {
+        $zoomBtn.addEventListener('click', () => {
             const isZoomedIn = $zoomBtn.dataset.state === 'in';
 
             $zoomBtn.dataset.state = isZoomedIn ? 'out' : 'in';
@@ -464,4 +477,3 @@ preloadImages('#grid img').then(() => {
     Custom.utils.init();
     document.body.classList.remove('loading');
 });
-

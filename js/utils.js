@@ -9,7 +9,6 @@
   return new Promise((resolve => {
    // The imagesLoaded library is used to ensure all images (including backgrounds) are fully loaded.
    imagesLoaded(document.querySelectorAll(selector), { background: true }, resolve);
-
   }));
 };
 
