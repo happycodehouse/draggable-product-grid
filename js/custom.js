@@ -101,6 +101,7 @@ Custom.utils = {
     addEvents: function () {
         window.addEventListener('wheel', (e) => {
             e.preventDefault();
+            if (!draggable) return;
 
             const deltaX = -e.deltaX * 7;
             const deltaY = -e.deltaY * 7;
