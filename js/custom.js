@@ -473,7 +473,46 @@ Custom.utils = {
     }
 }
 
-preloadImages('#grid img').then(() => {
-    Custom.utils.init();
-    document.body.classList.remove('loading');
-});
+const MOBILE_BREAKPOINT = 1024;
+let isInitialized = false;
+
+function handleResize() {
+    if (window.innerWidth >= MOBILE_BREAKPOINT) {
+        if (isInitialized) return; // 이미 실행됐으면 스킵
+
+        isInitialized = true;
+        preloadImages('#grid img').then(() => {
+            Custom.utils.init();
+            document.body.classList.remove('loading');
+        });
+    } else {
+        if (!isInitialized) return;
+
+        isInitialized = false;
+        gsap.killTweensOf('*');
+        draggable && draggable.kill();
+        draggable = null;
+        SHOW_DETAILS = false;
+        isAnimating = false;
+
+        // 인라인 스타일 전부 초기화
+        gsap.set([$dom, $grid, $details, $cross, ...$products], {
+            clearProps: 'all'
+        });
+
+        $dom.classList.remove('--is-loaded', '--is-details-showing');
+        $details.classList.remove('--is-showing');
+        document.body.classList.remove('loading');
+    }
+}
+
+function debounce(fn, delay) {
+    let timer;
+    return function () {
+        clearTimeout(timer);
+        timer = setTimeout(fn, delay);
+    }
+}
+
+handleResize();
+window.addEventListener('resize', debounce(handleResize, 300));
